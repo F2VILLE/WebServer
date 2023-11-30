@@ -3,7 +3,7 @@
 This is a WebServer made in JavaScript using the native NodeJS modules "net".
 Heavily inspired by ExpressJS.
 
-/!\\ DO NOT USE IN PRODUCTION. THIS IS A POC TO LEARN ABOUT NET /!\\
+<span style="font-weight: bolder; color: #ff0000;">/!\\ DO NOT USE IN PRODUCTION. THIS IS A POC TO LEARN ABOUT NET /!\\</span>
 
 ## How to use
 
