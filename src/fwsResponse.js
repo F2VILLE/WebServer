@@ -1,6 +1,6 @@
 const fs = require("fs")
 
-class Response {
+class fwsResponse {
     constructor(socket, fws) {
         this.socket = socket
         this.fws = fws
@@ -86,4 +86,4 @@ class Response {
 
 }
 
-module.exports = Response
+module.exports = fwsResponse
