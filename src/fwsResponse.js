@@ -4,15 +4,45 @@ class fwsResponse {
     constructor(socket, fws) {
         this.socket = socket
         this.fws = fws
+        this.cookies = {}
+        this.locals = {}
+    }
+
+    setCookie(cookiename, value, options) {
+        const cookie = `${value};`
+        if (options) {
+            if (options.expires) cookie += ` Expires=${options.expires};`
+            if (options.maxAge) cookie += ` Max-Age=${options.maxAge};`
+            if (options.domain) cookie += ` Domain=${options.domain};`
+            if (options.path) cookie += ` Path=${options.path};`
+            if (options.secure) cookie += ` Secure;`
+            if (options.httpOnly) cookie += ` HttpOnly;`
+            if (options.sameSite) cookie += ` SameSite=${options.sameSite};`
+        }
+        this.cookies = { ...this.cookies, [cookiename]: cookie }
+    }    
+
+    removeCookie(cookiename) {
+        this.cookies = { ...this.cookies, [cookiename]: "deleted; Expires=Thu, 01 Jan 1970 00:00:00 GMT;"}
+    }
+
+    redirect(path) {
+        this.socket.write("HTTP/1.1 302 Found\r\n")
+        this.socket.write(`Location: ${path}\r\n`)
+        this.cookies ? this.socket.write(`Set-Cookie: ${Object.keys(this.cookies).map(x => `${x}=${this.cookies[x]}`).join("; ")}\r\n`) : null
+        this.socket.write("\r\n")
+        this.socket.end()
     }
 
     render(path, locals) {
+        console.log("Rendering Res", this.fws.views)
         if (!this.fws.viewEngine) return this.send(path)
         if (!fs.existsSync((this.fws.views.endsWith("/") ? this.fws.views : `${this.fws.views}/`) + (path.endsWith(`.${this.fws.viewEngineExt}`) ? path : `${path}.${this.fws.viewEngineExt}`))) return false
-        const data = this.fws.viewEngine.render(fs.readFileSync((this.fws.views.endsWith("/") ? this.fws.views : `${this.fws.views}/`) + (path.endsWith(`.${this.fws.viewEngineExt}`) ? path : `${path}.${this.fws.viewEngineExt}`), "utf-8"), locals)
+        const data = this.fws.viewEngine.render(fs.readFileSync((this.fws.views.endsWith("/") ? this.fws.views : `${this.fws.views}/`) + (path.endsWith(`.${this.fws.viewEngineExt}`) ? path : `${path}.${this.fws.viewEngineExt}`), "utf-8"), {...locals, ...this.locals})
         this.socket.write("HTTP/1.1 200 OK\r\n")
         this.socket.write("Content-Type: text/html\r\n")
         this.socket.write(`Content-Length: ${data.length}\r\n`)
+        this.cookies ? this.socket.write(`Set-Cookie: ${Object.keys(this.cookies).map(x => `${x}=${this.cookies[x]}`).join("; ")}\r\n`) : null
         this.socket.write("\r\n")
         this.socket.write(data)
         this.socket.end()
@@ -22,6 +52,7 @@ class fwsResponse {
         this.socket.write("HTTP/1.1 200 OK\r\n")
         this.socket.write("Content-Type: text/html\r\n")
         this.socket.write(`Content-Length: ${data.length}\r\n`)
+        this.cookies ? this.socket.write(`Set-Cookie: ${Object.keys(this.cookies).map(x => `${x}=${this.cookies[x]}`).join("; ")}\r\n`) : null
         this.socket.write("\r\n")
         this.socket.write(data)
         this.socket.end()
@@ -69,6 +100,7 @@ class fwsResponse {
         this.socket.write("HTTP/1.1 200 OK\r\n")
         this.socket.write(`Content-Type: ${contentTypeAndEncoding.contentType}\r\n`)
         this.socket.write(`Content-Length: ${data.length}\r\n`)
+        this.cookies ? this.socket.write(`Set-Cookie: ${Object.keys(this.cookies).map(x => `${x}=${this.cookies[x]}`).join("; ")}\r\n`) : null
         this.socket.write("\r\n")
         this.socket.write(data)
         this.socket.end()
@@ -79,6 +111,7 @@ class fwsResponse {
         this.socket.write("HTTP/1.1 200 OK\r\n")
         this.socket.write("Content-Type: text/html\r\n")
         this.socket.write(`Content-Length: ${data.length}\r\n`)
+        this.cookies ? this.socket.write(`Set-Cookie: ${Object.keys(this.cookies).map(x => `${x}=${this.cookies[x]}`).join("; ")}\r\n`) : null
         this.socket.write("\r\n")
         this.socket.write(data)
         this.socket.end()

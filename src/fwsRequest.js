@@ -10,7 +10,7 @@ class fwsRequest {
         this.#parseHeader()
     }
 
-    /**
+/**
  * 
  * @param {string} rawHeaders 
  * @returns 
@@ -65,7 +65,7 @@ class fwsRequest {
                 headers[line.split(':')[0].split("").map((v, i) => i == 0 ? v.toLowerCase() : v).join("")] = splittedLine.slice(1).join("")
             }
         }
-
+        this.cookies = headers.cookie ? headers.cookie.split(";").map(x => x.split("=")).map(x => ({ name: x[0], value: x[1] })).reduce((a, v) => ({ ...a, [v.name.trim()]: v.value }), {}) : {}
         this.path = headers.path
         this.headers = headers
 
