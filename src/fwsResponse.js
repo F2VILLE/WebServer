@@ -6,6 +6,7 @@ class fwsResponse {
         this.fws = fws
         this.cookies = {}
         this.locals = {}
+        this.session = this.fws.sessionManager.getSession(this.socket.sessionID)
     }
 
     setCookie(cookiename, value, options) {

@@ -4,6 +4,7 @@ const fs = require("fs")
 const fwsResponse = require("./src/fwsResponse")
 const fwsRequest = require("./src/fwsRequest")
 const Router = require("./src/Router")
+const SessionManager = require("./src/SessionManager")
 
 class fws {
     #SETTINGS_ALLOWED = ["views", "viewEngine"]
@@ -15,6 +16,7 @@ class fws {
         this.viewEngine = null
         this.renderEngineModule = null
         this.viewEngineExt = null
+        this.SessionManager = new SessionManager()
         this.ssrv.on("connection", (socket) => {
             socket.on("data", (d) => {
                 const req = new fwsRequest(d.toString(), socket.remoteAddress)
