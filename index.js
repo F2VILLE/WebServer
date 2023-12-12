@@ -4,7 +4,12 @@ const fs = require("fs")
 const fwsResponse = require("./src/fwsResponse")
 const fwsRequest = require("./src/fwsRequest")
 const Router = require("./src/Router")
-const SessionManager = require("./src/SessionManager")
+const Session = require("./src/Session")
+const crypto = require("crypto")
+
+function generateSessionID() {
+    return crypto.randomBytes(32).toString("hex")
+}
 
 class fws {
     #SETTINGS_ALLOWED = ["views", "viewEngine"]
@@ -16,7 +21,7 @@ class fws {
         this.viewEngine = null
         this.renderEngineModule = null
         this.viewEngineExt = null
-        this.SessionManager = new SessionManager()
+        this.sessions = []
         this.ssrv.on("connection", (socket) => {
             socket.on("data", (d) => {
                 const req = new fwsRequest(d.toString(), socket.remoteAddress)
@@ -25,7 +30,13 @@ class fws {
                 if (this.router.ACCEPTED_METHODS.includes(method)) {
                     const route = this.router.routes[method].find(r => r.path == req.headers.path) || this.router.routes["*"].find(r => r.path == req.path)
                     if (route) {
-                        const res = new fwsResponse(socket, this)
+                        const res = new fwsResponse(socket, this, req)
+                        if (!req.cookies.sid || !this.sessions.find(s => s.id == req.cookies.sid)) {
+                            const sid = req.cookies.sid ?? generateSessionID()
+                            this.sessions.push(new Session(sid))
+                            res.setCookie("sid", sid)
+                            res.session = this.sessions.find(s => s.id == sid)
+                        }
                         route.callback(req, res)
                     } else {
                         socket.write("HTTP/1.1 404 Not Found\r\n\r\n")

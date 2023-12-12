@@ -1,12 +1,20 @@
 const fs = require("fs")
+const { Socket } = require("net")
+const fwsRequest = require("./fwsRequest")
 
 class fwsResponse {
-    constructor(socket, fws) {
+    /**
+     * 
+     * @param {Socket} socket 
+     * @param {*} fws 
+     * @param {fwsRequest} request 
+     */
+    constructor(socket, fws, request) {
         this.socket = socket
         this.fws = fws
         this.cookies = {}
         this.locals = {}
-        this.session = this.fws.sessionManager.getSession(this.socket.sessionID)
+        this.session = request.cookies.sid ? this.fws.sessions.find(s => s.id == request.cookies.sid) : null
     }
 
     setCookie(cookiename, value, options) {
