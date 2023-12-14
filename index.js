@@ -11,9 +11,13 @@ function generateSessionID() {
     return crypto.randomBytes(32).toString("hex")
 }
 
+
 class fws {
     #SETTINGS_ALLOWED = ["views", "viewEngine"]
     constructor(options) {
+        if (options.dotenv) {
+            require("./src/envConfig.js")
+        }
         this.ssrv = net.createServer({ allowHalfOpen: true, keepAlive: false })
         this.router = new Router(this)
         this.views = __dirname + "/views"
